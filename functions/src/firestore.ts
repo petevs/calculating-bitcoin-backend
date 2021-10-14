@@ -1,39 +1,42 @@
-import * as functions from 'firebase-functions'
-import * as admin from 'firebase-admin'
+// import * as functions from 'firebase-functions'
+// import * as admin from 'firebase-admin'
+// import moment from 'moment'
 
 
-const db = admin.firestore()
+// const db = admin.firestore()
 
-export const gameCount = functions.firestore
-    .document('games/{gameId}')
-    .onCreate(async (snapshot, context) => {
-        const data = snapshot.data()
+// export const gameCount = functions.firestore
+//     .document('games/{gameId}')
+//     .onCreate(async (snapshot, context) => {
+//         const data = snapshot.data()
 
-        const userRef = db.doc(`users/${data.uid}`)
+//         const userRef = db.doc(`users/${data.uid}`)
 
-        const userSnap = await userRef.get()
-        const userData = userSnap.data()
+//         const userSnap = await userRef.get()
+//         const userData = userSnap.data()
 
-        return userRef.update({
-            gameCount: userData.gameCount + 1
-        })
+//         return userRef.update({
+//             gameCount: userData.gameCount + 1
+//         })
 
 
-    })
+//     })
 
-export const updateTransactions = functions.firestore
-    .document('users/{docId}')
-    .onUpdate(async (snapshot, context) => {
+// export const updateTransactions = functions.firestore
+//     .document('users/{docId}')
+//     .onUpdate(async (snapshot, context) => {
 
-        const after = snapshot.after.data()
+//         const after = snapshot.after.data()
 
-        const transactionRef = db.collection('transactions').doc(`${after.docId}`)
+//         after[]
 
-        // const transactionSnap = await transactionRef.get()
-        // const transactionData = transactionSnap.data()
+//         const transactionRef = db.collection('transactions').doc(`${after.docId}`)
 
-        return transactionRef.set({
-            hi: 'hello'
-        })
+//         // const transactionSnap = await transactionRef.get()
+//         // const transactionData = transactionSnap.data()
 
-    })
+//         return transactionRef.set({
+//             hi: 'hello'
+//         })
+
+//     })

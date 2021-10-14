@@ -1,2 +1,1 @@
-export { basicHTTP } from './http'
-export { gameCount, updateTransactions } from './firestore'
+export { updateMarketData } from './scheduled'
