@@ -1,1 +1,1 @@
-export { updateMarketData } from './scheduled'
+export { updateMarketData, updateHistoricalData } from './scheduled'
