@@ -1,9 +1,15 @@
-// import * as functions from 'firebase-functions'
-// import * as admin from 'firebase-admin'
+import * as functions from 'firebase-functions'
+import * as admin from 'firebase-admin'
 // import moment from 'moment'
 
 
-// const db = admin.firestore()
+const db = admin.firestore()
+
+export const createUserDoc = functions.auth.user().onCreate((user) => {
+    db.collection('users').doc(user.uid).set({
+        exists: true
+    })
+})
 
 // export const gameCount = functions.firestore
 //     .document('games/{gameId}')
