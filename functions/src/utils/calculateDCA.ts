@@ -34,12 +34,16 @@ const getPrices = async (currency, days) => {
 }
 
 const getDates = (start, end, frequency ) => {
-    let dateList = []
+    let dateObj = {}
     let current: any = moment(start)
-    const stopDate = moment().format('YYYY-MM-DD')
+    let stopDate = moment().format('YYYY-MM-DD')
+    const today = moment().format('YYYY-MM-DD')
+    if(end){
+        stopDate = moment(end).format('YYYY-MM-DD')
+    }
     let newFrequency: any = 1
 
-    switch(newFrequency) {
+    switch(frequency) {
         case 'daily':
             newFrequency = 1
             break 
@@ -50,17 +54,67 @@ const getDates = (start, end, frequency ) => {
             newFrequency = 30
             break
     }
+
+    //Set count to frequency so buy the first day
+    let count = newFrequency - 1
     
-    while(current.isSameOrBefore(stopDate)){
-        dateList.push(current.format('YYYY-MM-DD'))
-        current.add(newFrequency, 'days')
+    while(current.isSameOrBefore(today)){
+
+        count = count + 1
+        let action = false
+
+        if(count === newFrequency){
+            action = true
+            count = 0
+        }
+
+        if(current.isSameOrAfter(stopDate)){
+            action = false
+        }
+
+        dateObj = {
+            ...dateObj,
+            [current.format('YYYY-MM-DD')]: action
+        }
+
+        current.add(1, 'days')
     }
 
-    return dateList
+    return dateObj
 
 }
 
 
+const getCurrentPrice = async (currency) => {
+    const { data } = await axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin?localization=${currency}`)
+        
+    const result: any = data
+
+    return result.market_data.current_price[currency]
+}
+
+
+const getSummary = (list, price) => {
+    const lastIndex = list.length - 1
+    const lastTransaction = list[lastIndex]
+
+    const currentValue = lastTransaction.runningBal * price
+    const totalInvested = lastTransaction.totalInvested
+    const gainLoss = currentValue - totalInvested
+    const roi = gainLoss / totalInvested * 100
+
+    const summary = {
+        currentPrice: price,
+        totalInvested: totalInvested,
+        bitcoinHoldings: lastTransaction.runningBal,
+        averageCost: lastTransaction.averageCost,
+        currentValue: currentValue,
+        gainLoss: gainLoss,
+        roi: roi
+    }
+
+    return summary
+}
 
 export const calculateDCA = async (details) => {
 
@@ -68,31 +122,36 @@ export const calculateDCA = async (details) => {
     const days = getDaysBetween(details.startDate, details.endDate)
     const prices = await getPrices(details.currency, days + 1)
 
-    // return {
-    //     dates: dates,
-    //     days: days,
-    //     prices: prices
-    // }
-
     let runningBal = 0
     let totalInvested = 0
     let averageCost = 0
     let value = 0
     let gainLoss = 0
 
-    const transactions = dates.map(item => {
-        const date = item
+    // const lastDate = dates.length - 1
+    const currentPrice = await getCurrentPrice(details.currency)
+
+    const dailyTotals = []
+    const transactions = []
+
+    for (const key in dates) {
+        const date = key
         const price = prices[date]
-        const dollarsSpent = details.dollarAmount
+        let dollarsSpent = 0
+        let bitcoinAdded = 0
+
+        if(dates[key]){
+           dollarsSpent = details.dollarAmount
+           bitcoinAdded = details.dollarAmount / price
+        }
+
         totalInvested = totalInvested + dollarsSpent
-        const bitcoinAdded = details.dollarAmount / price
         runningBal = runningBal + bitcoinAdded
         averageCost = totalInvested / runningBal
         value = runningBal * price
         gainLoss = value - totalInvested
 
-
-        return {
+        const transaction = {
             date: date,
             price: price,
             dollarsSpent: dollarsSpent,
@@ -103,7 +162,19 @@ export const calculateDCA = async (details) => {
             value: value,
             gainLoss: gainLoss
         }
-    })
 
-    return transactions
+        dailyTotals.push(transaction)
+
+        if(dates[key]){
+            transactions.push(transaction)
+        }
+    }
+
+
+    return {
+        summary: getSummary(transactions, currentPrice),
+        transactions: transactions,
+        dailyTotals: dailyTotals
+    }
+
 }
