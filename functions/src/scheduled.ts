@@ -36,8 +36,7 @@ export const updateHistoricalData = functions
     
             let historical = {}
     
-            result.prices.forEach( item => {
-    
+            await result.prices.forEach( item => {
     
                 const friendlyDate:any = moment(item[0]).format('YYYY-MM-DD')
     
