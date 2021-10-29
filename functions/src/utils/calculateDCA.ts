@@ -172,7 +172,10 @@ export const calculateDCA = async (details) => {
 
 
     return {
-        summary: getSummary(transactions, currentPrice),
+        summary: {
+            ...getSummary(transactions, currentPrice),
+            totalTransactions: transactions.length
+        },
         transactions: transactions,
         dailyTotals: dailyTotals
     }
