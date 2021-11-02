@@ -7,7 +7,7 @@ const db = admin.firestore()
 
 export const createUserDoc = functions.auth.user().onCreate((user) => {
     db.collection('users').doc(user.uid).set({
-        exists: true
+        portfolio: {},
     })
 })
 
