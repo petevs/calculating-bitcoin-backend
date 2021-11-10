@@ -1,3 +1,3 @@
 export { updateMarketData, updateHistoricalData } from './scheduled'
-export { createUserDoc } from './firestore'
+export { createUserDoc, updatePublic } from './firestore'
 export { api } from './http'
